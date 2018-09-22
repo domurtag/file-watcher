@@ -1,9 +1,15 @@
 package file.watcher
 
+import grails.gsp.PageRenderer
+import org.springframework.messaging.simp.SimpMessageSendingOperations
+
+import java.nio.file.*
 import java.time.LocalTime
 
 class FileWatcherService {
 
+    SimpMessageSendingOperations brokerMessagingTemplate
+    PageRenderer groovyPageRenderer
     /**
      * Use prototype scope to ensure instance of LogController gets its own instance of this class
      * http://docs.grails.org/latest/guide/services.html#scopedServices
@@ -15,6 +21,8 @@ class FileWatcherService {
     String getFileLocation() {
         logFile.absolutePath
     }
+
+    private int lastLineIndex = 0;
 
     /**
      * Create the log file if it doesn't exist
@@ -35,11 +43,50 @@ class FileWatcherService {
      */
     List<String> getMostRecentLines() {
         def lines = logFile.readLines()
-        lines.size() <= MAX_INITIAL_LINES ? lines : lines[-MAX_INITIAL_LINES..-1]
+        lastLineIndex = lines.size()
+        def logFileLines = lines.size() <= MAX_INITIAL_LINES ? lines : lines[-MAX_INITIAL_LINES..-1]
+
+        // start listening for changes to the log file
+        Thread.start { -> registerListener() }
+        logFileLines
     }
 
     void appendLine() {
         int number = Random.newInstance().nextInt()
-        logFile.append"${System.lineSeparator()}Random number ${number}. This line was written at: ${LocalTime.now()}"
+        logFile.append "${System.lineSeparator()}Random number ${number}. This line was written at: ${LocalTime.now()}"
+    }
+
+    private registerListener() {
+
+        FileSystem fileSystem = FileSystems.default
+        Path logFileParentDir = fileSystem.getPath(logFile.parentFile.absolutePath)
+
+        fileSystem.newWatchService().withCloseable { WatchService watchService ->
+            logFileParentDir.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY)
+
+            while (true) {
+                final WatchKey watchKey = watchService.take()
+                watchKey.pollEvents().each { event ->
+                    // we're only listening to ENTRY_MODIFY events so the context is always a Path
+                    Path changed = (Path) event.context()
+
+                    // Individual files can't be watched, only directories, so check that the event target is the logfile
+                    if (changed.endsWith(logFile.name)) {
+                        def allLines = logFile.readLines()
+                        def newLines = allLines[lastLineIndex..-1]
+                        lastLineIndex = allLines.size()
+
+                        def newLinesMarkup = groovyPageRenderer.render(template: '/log/newLines', model: [lines: newLines])
+                        brokerMessagingTemplate.convertAndSend "/topic/lines", newLinesMarkup
+                    }
+                }
+
+                // if the key is invalid (e.g. because the dir was deleted), stop watching
+                if (!watchKey.reset()) {
+                    watchKey.cancel()
+                    break
+                }
+            }
+        }
     }
 }

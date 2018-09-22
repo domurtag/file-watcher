@@ -14,11 +14,8 @@
             client.connect({}, function () {
                 client.subscribe("/topic/lines", function (message) {
                     console.log("Received: " + message.body);
+                    $('#file-lines ul').append(message.body);
                 });
-            });
-
-            $("#helloButton").click(function () {
-                client.send("/app/lines", {}, "world");
             });
         });
     </script>
@@ -43,9 +40,7 @@
     <div id="file-lines">
         <h2>Log file content</h2>
         <ul class="list-group">
-            <g:each in="${lines}" var="line">
-                <li class="list-group-item">${line}</li>
-            </g:each>
+            <g:render template="newLines" model="line: lines"/>
         </ul>
     </div>
     <button id="helloButton">hello</button>

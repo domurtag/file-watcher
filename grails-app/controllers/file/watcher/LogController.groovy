@@ -1,9 +1,5 @@
 package file.watcher
 
-
-import org.springframework.messaging.handler.annotation.MessageMapping
-import org.springframework.messaging.handler.annotation.SendTo
-
 class LogController {
 
     FileWatcherService fileWatcherService
@@ -17,17 +13,11 @@ class LogController {
         ]
     }
 
-    @MessageMapping("/lines")
-    @SendTo("/topic/lines")
-    protected String lines(String world) {
-        return "hello, ${world}!"
-    }
-
     def startWriting() {
         if (!fileWritingSchedule) {
             fileWritingSchedule = new Timer('fileWritingSchedule', true)
             TimerTask fileAppender = [run: { -> fileWatcherService.appendLine() }] as TimerTask
-            long frequencyMs = 200
+            long frequencyMs = 400
             fileWritingSchedule.schedule(fileAppender, 0, frequencyMs)
         }
         redirect(action: "index")
