@@ -572,3 +572,7 @@ img.grails-logo {
     height:340px;
     margin-top:-10px;
 }
+
+#file-lines {
+    margin-top: 30px;
+}

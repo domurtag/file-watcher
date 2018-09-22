@@ -1,5 +1,7 @@
 package file.watcher
 
+import java.time.LocalTime
+
 class FileWatcherService {
 
     /**
@@ -34,5 +36,10 @@ class FileWatcherService {
     List<String> getMostRecentLines() {
         def lines = logFile.readLines()
         lines.size() <= MAX_INITIAL_LINES ? lines : lines[-MAX_INITIAL_LINES..-1]
+    }
+
+    void appendLine() {
+        int number = Random.newInstance().nextInt()
+        logFile.append"${System.lineSeparator()}Random number ${number}. This line was written at: ${LocalTime.now()}"
     }
 }
