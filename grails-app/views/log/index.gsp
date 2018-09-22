@@ -43,7 +43,6 @@
             <g:render template="newLines" model="line: lines"/>
         </ul>
     </div>
-    <button id="helloButton">hello</button>
 </div>
 </body>
 </html>
