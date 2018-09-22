@@ -6,6 +6,12 @@ import org.springframework.messaging.handler.annotation.SendTo
 
 class LogController {
 
+    FileWatcherService fileWatcherService
+
+    def index() {
+        [logFile: fileWatcherService.fileLocation, lines: fileWatcherService.mostRecentLines]
+    }
+
     @MessageMapping("/lines")
     @SendTo("/topic/lines")
     protected String lines(String world) {

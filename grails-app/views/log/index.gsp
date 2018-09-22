@@ -24,6 +24,19 @@
     </script>
 </head>
 <body>
-<button id="helloButton">hello</button>
+
+<div class="container">
+    <div class="page-header">
+        <h1>Content of file at: ${logFile}</h1>
+    </div>
+
+    <ul id="file-lines">
+        <g:each in="${lines}" var="line">
+            <li>${line}</li>
+        </g:each>
+    </ul>
+
+    <button id="helloButton">hello</button>
+</div>
 </body>
 </html>
