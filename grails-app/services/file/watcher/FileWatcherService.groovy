@@ -47,13 +47,13 @@ class FileWatcherService {
         def logFileLines = lines.size() <= MAX_INITIAL_LINES ? lines : lines[-MAX_INITIAL_LINES..-1]
 
         // start listening for changes to the log file
-        Thread.start { -> registerListener() }
+        Thread.startDaemon('logFileWatcher') { -> registerListener() }
         logFileLines
     }
 
     void appendLine() {
         int number = Random.newInstance().nextInt()
-        logFile.append "${System.lineSeparator()}Random number ${number}. This line was written at: ${LocalTime.now()}"
+        logFile.append "Random number ${number}. This line was written at: ${LocalTime.now()}${System.lineSeparator()}"
     }
 
     private registerListener() {
