@@ -13,7 +13,6 @@
 
             client.connect({}, function () {
                 client.subscribe("/topic/lines", function (message) {
-                    console.log("Received: " + message.body);
                     $('#file-lines ul').append(message.body);
                 });
             });
