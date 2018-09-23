@@ -1,5 +1,7 @@
 package file.watcher
 
+import org.springframework.http.HttpStatus
+
 import javax.annotation.PostConstruct
 
 class LogController {
@@ -31,7 +33,7 @@ class LogController {
      */
     def startWriting() {
         logFileAppender.start(400)
-        redirect(action: "index")
+        render status: HttpStatus.OK
     }
 
     /**
@@ -40,6 +42,6 @@ class LogController {
      */
     def stopWriting() {
         logFileAppender.stop()
-        redirect(action: "index")
+        render status: HttpStatus.OK
     }
 }

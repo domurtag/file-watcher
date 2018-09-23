@@ -46,6 +46,7 @@ dependencies {
     runtime "com.bertramlabs.plugins:asset-pipeline-grails:2.14.8"
     testCompile "org.grails:grails-web-testing-support"
 
+    compile 'org.grails.plugins:ajax-tags:1.0.0'
     compile "org.grails.plugins:grails-spring-websocket:2.4.1"
 }
 

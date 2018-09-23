@@ -13,7 +13,14 @@
 
             client.connect({}, function () {
                 client.subscribe("/topic/lines", function (message) {
+                    var lengthBefore = $("#file-lines li").length;
                     $('#file-lines ul').append(message.body);
+                    var linesAdded = $("#file-lines li").length - lengthBefore;
+
+                    if (linesAdded) {
+                        toastr.clear();
+                        toastr.info(linesAdded + ' new log lines added');
+                    }
                 });
             });
         });
@@ -28,12 +35,12 @@
     </div>
 
     <div class="btn-group" role="group">
-        <g:link action="startWriting" class="btn btn-success ${isAppenderRunning ? 'disabled' : ''}">
+        <g:remoteLink action="startWriting" class="btn btn-success">
             Start appender
-        </g:link>
-        <g:link action="stopWriting" class="btn btn-danger ${isAppenderRunning ? '' : 'disabled'}">
+        </g:remoteLink>
+        <g:remoteLink action="stopWriting" class="btn btn-danger">
             Stop appender
-        </g:link>
+        </g:remoteLink>
     </div>
 
     <div id="file-lines">

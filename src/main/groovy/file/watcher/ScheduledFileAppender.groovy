@@ -54,7 +54,7 @@ class ScheduledFileAppender {
     private appendLine() {
         int number = Random.newInstance().nextInt()
         file.append "Random number ${number}. This line was written at: ${LocalTime.now()}${System.lineSeparator()}"
-        log.info "${++lineCount} line(s) added by the appender"
+        log.debug "${++lineCount} line(s) added by the appender"
     }
 
     boolean isRunning() {
