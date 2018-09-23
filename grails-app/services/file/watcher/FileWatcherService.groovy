@@ -9,7 +9,9 @@ import java.time.LocalTime
 class FileWatcherService {
 
     SimpMessageSendingOperations brokerMessagingTemplate
+
     PageRenderer groovyPageRenderer
+
     /**
      * Use prototype scope to ensure instance of LogController gets its own instance of this class
      * http://docs.grails.org/latest/guide/services.html#scopedServices
@@ -18,6 +20,10 @@ class FileWatcherService {
 
     static final int MAX_INITIAL_LINES = 10
 
+    /**
+     * Get the path of the logfile
+     * @return
+     */
     String getFileLocation() {
         logFile.absolutePath
     }
@@ -51,11 +57,18 @@ class FileWatcherService {
         logFileLines
     }
 
+    /**
+     * Append a single line to the logfile
+     */
     void appendLine() {
         int number = Random.newInstance().nextInt()
         logFile.append "Random number ${number}. This line was written at: ${LocalTime.now()}${System.lineSeparator()}"
     }
 
+    /**
+     * Listen for changes to the log file. Any new lines will be sent to the client via the WebSocket
+     * @return
+     */
     private registerListener() {
 
         FileSystem fileSystem = FileSystems.default

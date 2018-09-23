@@ -3,8 +3,13 @@ package file.watcher
 class LogController {
 
     FileWatcherService fileWatcherService
+
     private Timer fileWritingSchedule
 
+    /**
+     * Render the home page
+     * @return
+     */
     def index() {
         [
                 logFile: fileWatcherService.fileLocation,
@@ -13,6 +18,10 @@ class LogController {
         ]
     }
 
+    /**
+     * Start automatically appending lines to the logfile at regular intervals
+     * @return
+     */
     def startWriting() {
         if (!fileWritingSchedule) {
             fileWritingSchedule = new Timer('fileWritingSchedule', true)
@@ -23,6 +32,10 @@ class LogController {
         redirect(action: "index")
     }
 
+    /**
+     * Stop appending lines to the logfile
+     * @return
+     */
     def stopWriting() {
         if (fileWritingSchedule) {
             fileWritingSchedule.cancel()
