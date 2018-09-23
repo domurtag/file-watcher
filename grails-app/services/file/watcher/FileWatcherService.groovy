@@ -12,10 +12,10 @@ class FileWatcherService {
     PageRenderer groovyPageRenderer
 
     /**
-     * Use prototype scope to ensure instance of LogController gets its own instance of this class
+     * Use this scope to ensure each client effectively has their own copy of this class
      * http://docs.grails.org/latest/guide/services.html#scopedServices
      */
-    static scope = "prototype"
+    static scope = "request"
 
     static final int MAX_INITIAL_LINES = 10
 
