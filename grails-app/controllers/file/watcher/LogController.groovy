@@ -6,6 +6,8 @@ class LogController {
 
     private Timer fileWritingSchedule
 
+    private final ScheduledFileAppender logFileAppender = new ScheduledFileAppender()
+
     /**
      * Render the home page
      * @return
@@ -23,12 +25,7 @@ class LogController {
      * @return
      */
     def startWriting() {
-        if (!fileWritingSchedule) {
-            fileWritingSchedule = new Timer('fileWritingSchedule', true)
-            TimerTask fileAppender = [run: { -> fileWatcherService.appendLine() }] as TimerTask
-            long frequencyMs = 400
-            fileWritingSchedule.schedule(fileAppender, 0, frequencyMs)
-        }
+        logFileAppender.start(400)
         redirect(action: "index")
     }
 
@@ -37,10 +34,7 @@ class LogController {
      * @return
      */
     def stopWriting() {
-        if (fileWritingSchedule) {
-            fileWritingSchedule.cancel()
-            fileWritingSchedule = null
-        }
+        logFileAppender.stop()
         redirect(action: "index")
     }
 }
