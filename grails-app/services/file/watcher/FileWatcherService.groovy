@@ -4,18 +4,13 @@ import grails.gsp.PageRenderer
 import org.springframework.messaging.simp.SimpMessageSendingOperations
 
 import java.nio.file.*
+import java.util.concurrent.ConcurrentHashMap
 
 class FileWatcherService {
 
     SimpMessageSendingOperations brokerMessagingTemplate
 
     PageRenderer groovyPageRenderer
-
-    /**
-     * Use this scope to ensure each client effectively has their own copy of this class
-     * http://docs.grails.org/latest/guide/services.html#scopedServices
-     */
-    static scope = "request"
 
     static final int MAX_INITIAL_LINES = 10
 
@@ -27,7 +22,7 @@ class FileWatcherService {
         logFile
     }
 
-    private int lastLineIndex = 0;
+    private final Map<String, Integer> lastLineIndices = new ConcurrentHashMap<String, Integer>()
 
     /**
      * Create the log file if it doesn't exist
@@ -48,11 +43,12 @@ class FileWatcherService {
      */
     List<String> getMostRecentLines() {
         def lines = logFile.readLines()
-        lastLineIndex = lines.size()
+        String clientId = UUID.randomUUID().toString()
+        lastLineIndices[clientId] = lines.size()
         def logFileLines = lines.size() <= MAX_INITIAL_LINES ? lines : lines[-MAX_INITIAL_LINES..-1]
 
         // start listening for changes to the log file
-        Thread.startDaemon('logFileWatcher') { -> registerListener() }
+        Thread.startDaemon('logFileWatcher') { -> registerListener(clientId) }
         logFileLines
     }
 
@@ -60,7 +56,7 @@ class FileWatcherService {
      * Listen for changes to the log file. Any new lines will be sent to the client via the WebSocket
      * @return
      */
-    private registerListener() {
+    private registerListener(String clientId) {
 
         FileSystem fileSystem = FileSystems.default
         Path logFileParentDir = fileSystem.getPath(logFile.parentFile.absolutePath)
@@ -78,11 +74,12 @@ class FileWatcherService {
                     if (changed.endsWith(logFile.name)) {
                         def allLines = logFile.readLines()
                         def lineCount = allLines.size()
+                        Integer lastLineIndex = lastLineIndices[clientId]
 
                         if (lineCount > lastLineIndex) {
                             def newLines = allLines[lastLineIndex..-1]
                             log.info "Total line count: ${lineCount}. Found new lines beginning at index $lastLineIndex"
-                            lastLineIndex = lineCount
+                            lastLineIndices[clientId] = lineCount
                             def newLinesMarkup = groovyPageRenderer.render(template: '/log/lines', model: [lines: newLines])
                             brokerMessagingTemplate.convertAndSend "/topic/lines", newLinesMarkup
                         }
