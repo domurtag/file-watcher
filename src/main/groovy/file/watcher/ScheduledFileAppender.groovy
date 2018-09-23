@@ -1,5 +1,7 @@
 package file.watcher
 
+import groovy.util.logging.Slf4j
+
 import java.time.LocalTime
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
@@ -7,6 +9,7 @@ import java.util.concurrent.locks.ReentrantLock
 /**
  * A thread-safe class that appends lines to a file at regular intervals
  */
+@Slf4j
 class ScheduledFileAppender {
 
     private final File file
@@ -14,6 +17,8 @@ class ScheduledFileAppender {
     private Timer fileWritingSchedule
 
     private final Lock lock = new ReentrantLock()
+
+    private int lineCount = 0
 
     /**
      * Create an instance. Appending will not begin until start() is called
@@ -49,6 +54,7 @@ class ScheduledFileAppender {
     private appendLine() {
         int number = Random.newInstance().nextInt()
         file.append "Random number ${number}. This line was written at: ${LocalTime.now()}${System.lineSeparator()}"
+        log.info "${++lineCount} line(s) added by the appender"
     }
 
     boolean isRunning() {

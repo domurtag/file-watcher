@@ -77,12 +77,15 @@ class FileWatcherService {
                     // Individual files can't be watched, only directories, so check that the event target is the logfile
                     if (changed.endsWith(logFile.name)) {
                         def allLines = logFile.readLines()
-                        def newLines = allLines[lastLineIndex..-1]
+                        def lineCount = allLines.size()
 
-                        log.info "Total line count: ${allLines.size()}. Found new lines beginning at index $lastLineIndex"
-                        lastLineIndex = allLines.size()
-                        def newLinesMarkup = groovyPageRenderer.render(template: '/log/lines', model: [lines: newLines])
-                        brokerMessagingTemplate.convertAndSend "/topic/lines", newLinesMarkup
+                        if (lineCount > lastLineIndex) {
+                            def newLines = allLines[lastLineIndex..-1]
+                            log.info "Total line count: ${lineCount}. Found new lines beginning at index $lastLineIndex"
+                            lastLineIndex = lineCount
+                            def newLinesMarkup = groovyPageRenderer.render(template: '/log/lines', model: [lines: newLines])
+                            brokerMessagingTemplate.convertAndSend "/topic/lines", newLinesMarkup
+                        }
                     }
                 }
 
