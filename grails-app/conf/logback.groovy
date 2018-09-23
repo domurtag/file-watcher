@@ -34,3 +34,6 @@ if (Environment.isDevelopmentMode() && targetDir != null) {
     logger("StackTrace", ERROR, ['FULL_STACKTRACE'], false)
 }
 root(ERROR, ['STDOUT'])
+
+def scanstationLogLevel = Environment.developmentMode ? DEBUG : INFO
+logger("file.watcher", scanstationLogLevel, ["STDOUT"], false)
