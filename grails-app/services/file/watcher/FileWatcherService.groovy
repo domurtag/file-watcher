@@ -4,7 +4,6 @@ import grails.gsp.PageRenderer
 import org.springframework.messaging.simp.SimpMessageSendingOperations
 
 import java.nio.file.*
-import java.time.LocalTime
 
 class FileWatcherService {
 
@@ -21,11 +20,11 @@ class FileWatcherService {
     static final int MAX_INITIAL_LINES = 10
 
     /**
-     * Get the path of the logfile
+     * Get the logfile
      * @return
      */
-    String getFileLocation() {
-        logFile.absolutePath
+    File getLogFile() {
+        logFile
     }
 
     private int lastLineIndex = 0;
@@ -58,14 +57,6 @@ class FileWatcherService {
     }
 
     /**
-     * Append a single line to the logfile
-     */
-    void appendLine() {
-        int number = Random.newInstance().nextInt()
-        logFile.append "Random number ${number}. This line was written at: ${LocalTime.now()}${System.lineSeparator()}"
-    }
-
-    /**
      * Listen for changes to the log file. Any new lines will be sent to the client via the WebSocket
      * @return
      */
@@ -78,7 +69,7 @@ class FileWatcherService {
             logFileParentDir.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY)
 
             while (true) {
-                final WatchKey watchKey = watchService.take()
+                WatchKey watchKey = watchService.take()
                 watchKey.pollEvents().each { event ->
                     // we're only listening to ENTRY_MODIFY events so the context is always a Path
                     Path changed = (Path) event.context()
@@ -87,9 +78,10 @@ class FileWatcherService {
                     if (changed.endsWith(logFile.name)) {
                         def allLines = logFile.readLines()
                         def newLines = allLines[lastLineIndex..-1]
-                        lastLineIndex = allLines.size()
 
-                        def newLinesMarkup = groovyPageRenderer.render(template: '/log/newLines', model: [lines: newLines])
+                        log.info "Total line count: ${allLines.size()}. Found new lines beginning at index $lastLineIndex"
+                        lastLineIndex = allLines.size()
+                        def newLinesMarkup = groovyPageRenderer.render(template: '/log/lines', model: [lines: newLines])
                         brokerMessagingTemplate.convertAndSend "/topic/lines", newLinesMarkup
                     }
                 }

@@ -39,7 +39,7 @@
     <div id="file-lines">
         <h2>Log file content</h2>
         <ul class="list-group">
-            <g:render template="newLines" model="line: lines"/>
+            <g:render template="lines"/>
         </ul>
     </div>
 </div>

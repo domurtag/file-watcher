@@ -1,12 +1,17 @@
 package file.watcher
 
+import javax.annotation.PostConstruct
+
 class LogController {
 
     FileWatcherService fileWatcherService
 
-    private Timer fileWritingSchedule
+    private ScheduledFileAppender logFileAppender
 
-    private final ScheduledFileAppender logFileAppender = new ScheduledFileAppender()
+    @PostConstruct
+    private initFileAppender() {
+        logFileAppender = new ScheduledFileAppender(fileWatcherService.logFile)
+    }
 
     /**
      * Render the home page
@@ -14,9 +19,9 @@ class LogController {
      */
     def index() {
         [
-                logFile: fileWatcherService.fileLocation,
+                logFile: fileWatcherService.logFile.absolutePath,
                 lines: fileWatcherService.mostRecentLines,
-                isAppenderRunning: fileWritingSchedule != null
+                isAppenderRunning: logFileAppender.running
         ]
     }
 

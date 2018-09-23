@@ -30,7 +30,7 @@ class ScheduledFileAppender {
 
     /**
      * Start writing lines to the file. Calling this method when the appender is already running will have no effect.
-     * @param frequencyMs specifies the frequency in milliseconds that a line will be appended to the file
+     * @param frequencyMs specifies the interval in milliseconds between each additional line being appended
      */
     void start(int frequencyMs) {
         lock.lock()
@@ -49,6 +49,10 @@ class ScheduledFileAppender {
     private appendLine() {
         int number = Random.newInstance().nextInt()
         file.append "Random number ${number}. This line was written at: ${LocalTime.now()}${System.lineSeparator()}"
+    }
+
+    boolean isRunning() {
+        fileWritingSchedule != null
     }
 
     /**
