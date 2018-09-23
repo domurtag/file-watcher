@@ -22,8 +22,7 @@ class LogController {
     def index() {
         [
                 logFile: fileWatcherService.logFile.absolutePath,
-                lines: fileWatcherService.mostRecentLines,
-                isAppenderRunning: logFileAppender.running
+                lines: fileWatcherService.mostRecentLines
         ]
     }
 

@@ -57,10 +57,6 @@ class ScheduledFileAppender {
         log.debug "${++lineCount} line(s) added by the appender"
     }
 
-    boolean isRunning() {
-        fileWritingSchedule != null
-    }
-
     /**
      * Stop writing lines to the file. Calling this method when the appender is not running will have no effect.
      */
